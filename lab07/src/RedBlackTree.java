@@ -1,3 +1,5 @@
+import net.sf.saxon.functions.ConstantFunction;
+
 public class RedBlackTree<T extends Comparable<T>> {
 
     /* Root of the tree. */
@@ -28,8 +30,7 @@ public class RedBlackTree<T extends Comparable<T>> {
          * @param left
          * @param right
          */
-        RBTreeNode(boolean isBlack, T item, RBTreeNode<T> left,
-                   RBTreeNode<T> right) {
+        RBTreeNode(boolean isBlack, T item, RBTreeNode<T> left, RBTreeNode<T> right) {
             this.isBlack = isBlack;
             this.item = item;
             this.left = left;
@@ -51,6 +52,9 @@ public class RedBlackTree<T extends Comparable<T>> {
      */
     void flipColors(RBTreeNode<T> node) {
         // TODO: YOUR CODE HERE
+        node.isBlack = !node.isBlack;         // 翻转当前节点的颜色
+        node.left.isBlack = !node.left.isBlack;   // 翻转左子节点的颜色
+        node.right.isBlack = !node.right.isBlack; // 翻转右子节点的颜色
     }
 
     /**
@@ -62,7 +66,12 @@ public class RedBlackTree<T extends Comparable<T>> {
      */
     RBTreeNode<T> rotateRight(RBTreeNode<T> node) {
         // TODO: YOUR CODE HERE
-        return null;
+        RBTreeNode<T> temp = node.left;
+        node.left = temp.right;
+        temp.right = node;
+        temp.isBlack = !temp.isBlack;
+        node.isBlack = !node.isBlack;
+        return temp;
     }
 
     /**
@@ -74,7 +83,12 @@ public class RedBlackTree<T extends Comparable<T>> {
      */
     RBTreeNode<T> rotateLeft(RBTreeNode<T> node) {
         // TODO: YOUR CODE HERE
-        return null;
+        RBTreeNode<T> temp = node.right;
+        node.right = temp.left;
+        temp.left = node;
+        temp.isBlack = !temp.isBlack;
+        node.isBlack = !node.isBlack;
+        return temp;
     }
 
     /**
@@ -105,17 +119,38 @@ public class RedBlackTree<T extends Comparable<T>> {
      * @return
      */
     private RBTreeNode<T> insert(RBTreeNode<T> node, T item) {
+
         // TODO: Insert (return) new red leaf node.
-
+        if(node == null) {
+            return new RBTreeNode<>(false, item, null, null);
+        }
         // TODO: Handle normal binary search tree insertion.
-
+        int cmp = node.item.compareTo(item);
+        if(cmp < 0) {
+            node.right = insert(node.right, item);
+        }
+        else if(cmp > 0) {
+            node.left = insert(node.left, item);
+        }
         // TODO: Rotate left operation
-
+        if (!isRed(node) && isRed(node.right) && !isRed(node.left)
+        ) {
+            node = rotateLeft(node);
+        }
+        if (isRed(node) && isRed(node.right)) {
+            node = rotateLeft(node);
+            node.isBlack = false;
+            node.left.isBlack = false;
+        }
         // TODO: Rotate right operation
-
+        if (isRed(node.left) && isRed(node.left.left)) {
+            node = rotateRight(node);
+        }
         // TODO: Color flip
-
-        return null; //fix this return statement
+        if (isRed(node.left) && isRed(node.right) && !isRed(node)) {
+            flipColors(node);
+        }
+        return node;
     }
 
 }
